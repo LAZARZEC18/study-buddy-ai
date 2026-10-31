@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en-AU" data-app="study-buddy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Buddy — turn notes into quizzes and flashcards</title>
+<meta name="description" content="Paste lecture notes or drop in a PDF. Study Buddy writes a summary, pulls out key terms, builds a quiz and makes flashcards that schedule themselves.">
+<meta property="og:title" content="Study Buddy">
+<meta property="og:description" content="Turn lecture notes or a PDF into a summary, key terms, a quiz and spaced-repetition flashcards.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lz-study-buddy.pages.dev/">
+<meta property="og:image" content="https://lz-study-buddy.pages.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="zl.css">
+<link rel="stylesheet" href="styles.css">
+<script src="zl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous" defer></script>
+<script type="module" src="app.js"></script>
+</head>
+<body id="top">
+<div data-zl="nav"></div>
+
+<main>
+  <section class="zl-hero zl-wrap">
+    <div data-zl="icon"></div>
+    <h1>Study Buddy</h1>
+    <p class="zl-tagline">Notes in. Revision out.</p>
+    <p class="zl-sub">Paste lecture notes or drop in a PDF. Study Buddy writes a summary, pulls out the key terms, builds a quiz and makes flashcards that come back right before you'd forget them.</p>
+    <div class="zl-hero-ctas">
+      <a class="zl-btn zl-btn-primary zl-btn-lg" href="#app">Start studying</a>
+      <a class="zl-btn zl-btn-secondary zl-btn-lg" href="#how">See how it works</a>
+    </div>
+    <div class="zl-hero-meta">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Free, no sign-up</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Sets saved on your device</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Maths that renders properly</span>
+    </div>
+  </section>
+
+  <section class="zl-stage" id="app" data-nav="App">
+    <div class="zl-wrap">
+      <div class="zl-app sb-app">
+        <div class="zl-appbar">
+          <div class="zl-appbar-title"><span class="zl-dot" id="modeDot"></span>Study Buddy <span class="zl-appbar-status" id="appStatus" aria-live="polite">Loading</span></div>
+          <button class="sb-mode" id="modeBtn" type="button" data-mode="checking" aria-haspopup="dialog"><span class="sb-mode-dot" aria-hidden="true"></span><span id="modeText">Checking AI</span></button>
+          <button class="zl-btn zl-btn-secondary zl-btn-sm" id="settingsBtn" type="button">Settings</button>
+          <button class="zl-btn zl-btn-primary zl-btn-sm" id="newBtn" type="button">New set</button>
+        </div>
+
+        <div class="sb-work">
+          <!-- Notes in -->
+          <form class="sb-compose" id="composeForm" novalidate aria-labelledby="composeTitle">
+            <div class="sb-pane-head">
+              <h2 id="composeTitle">Notes</h2>
+            </div>
+            <div class="zl-field">
+              <label class="zl-label" for="titleInput">Title</label>
+              <input id="titleInput" class="zl-input" maxlength="80" autocomplete="off" placeholder="Week 3: Kirchhoff's laws">
+              <span class="zl-hint">Optional. Leave it blank and Study Buddy will name the set.</span>
+            </div>
+            <div class="zl-field">
+              <label class="zl-label" for="notesInput">Your notes</label>
+              <div class="sb-drop" id="dropZone">
+                <textarea id="notesInput" class="zl-textarea sb-notes" spellcheck="true" aria-describedby="notesHint notesError" placeholder="Paste lecture notes, a textbook section or a transcript."></textarea>
+                <div class="sb-drop-overlay" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                  <b>Drop to add your notes</b><span>PDF, .txt or .md</span>
+                </div>
+              </div>
+              <div class="sb-notes-meta">
+                <span class="zl-hint" id="notesHint">Or drop in a PDF, .txt or .md file.</span>
+                <span class="sb-count num" id="charCount" aria-live="off">0 / 30,000</span>
+              </div>
+              <div class="sb-inline-error" id="notesError" hidden>
+                <span class="zl-error" id="notesErrorText"></span>
+                <button class="zl-btn zl-btn-ghost zl-btn-sm" type="button" id="trimBtn" hidden>Trim to 30,000 characters</button>
+              </div>
+            </div>
+            <div class="sb-file-row">
+              <button class="zl-btn zl-btn-secondary zl-btn-sm" type="button" id="fileBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 17v-6M9 14l3-3 3 3"/></svg>
+                Add a file
+              </button>
+              <input type="file" id="fileInput" class="sr-only" tabindex="-1" aria-label="Choose a PDF, .txt or .md file" accept=".txt,.md,.markdown,.pdf,text/plain,text/markdown,application/pdf">
+              <div class="sb-file-chip" id="fileChip" hidden aria-live="polite">
+                <span class="sb-file-icon" id="fileIcon" aria-hidden="true">PDF</span>
+                <span class="sb-file-text"><b id="fileName"></b><span id="fileMeta"></span></span>
+                <button class="sb-x" type="button" id="fileClear" aria-label="Remove file info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+            </div>
+            <div class="zl-field">
+              <span class="zl-label" id="qLabel">Quiz questions</span>
+              <div class="zl-seg" role="group" aria-labelledby="qLabel" id="qSeg">
+                <button type="button" data-q="5" aria-pressed="false">5</button>
+                <button type="button" data-q="8" aria-pressed="true">8</button>
+                <button type="button" data-q="10" aria-pressed="false">10</button>
+              </div>
+            </div>
+            <div class="sb-go-wrap">
+              <button type="submit" class="zl-btn zl-btn-primary zl-btn-lg sb-go" id="goBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+                <span id="goText">Generate study set</span>
+              </button>
+              <p class="zl-hint sb-go-hint" id="goHint">Checking whether the AI is available.</p>
+            </div>
+          </form>
+
+          <!-- Study out -->
+          <div class="sb-study" id="study">
+            <div class="sb-empty-study" id="studyEmpty" hidden>
+              <div class="sb-empty-art" aria-hidden="true">
+                <span class="sb-ea c1"></span><span class="sb-ea c2"></span><span class="sb-ea c3"></span>
+              </div>
+              <h3>Your study set will appear here</h3>
+              <p>Add notes on the left and press Generate. Or open the example to try every feature first.</p>
+              <button class="zl-btn zl-btn-secondary" type="button" data-action="example">Open the example</button>
+            </div>
+
+            <div class="sb-progress" id="studyProgress" hidden>
+              <div class="sb-spinner" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/></svg></div>
+              <h3 id="progTitle" aria-live="polite">Reading notes</h3>
+              <p id="progSub" class="sb-muted"></p>
+              <div class="sb-meter" role="progressbar" aria-label="Generating" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progMeter"><span id="progBar"></span></div>
+              <ol class="sb-stage-list" id="progSteps"></ol>
+              <button class="zl-btn zl-btn-secondary" type="button" id="stopBtn">Stop</button>
+            </div>
+
+            <div class="sb-error" id="studyError" hidden role="alert">
+              <div class="sb-error-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v5.5M12 16.5h.01"/></svg></div>
+              <h3 id="errTitle"></h3>
+              <p id="errHint"></p>
+              <div class="sb-error-actions" id="errActions"></div>
+            </div>
+
+            <div class="sb-set" id="studySet" hidden>
+              <header class="sb-set-head">
+                <div class="sb-set-titles">
+                  <h2 id="setTitle"></h2>
+                  <p class="sb-set-meta" id="setMeta"></p>
+                </div>
+                <button class="zl-btn zl-btn-secondary zl-btn-sm" type="button" id="setExport" aria-haspopup="menu" aria-expanded="false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19h14"/></svg>
+                  Export
+                </button>
+              </header>
+              <div class="zl-seg sb-tabs" role="tablist" aria-label="Study set sections" id="tabs">
+                <button role="tab" type="button" id="tab-summary" data-tab="summary" aria-controls="panel-summary" aria-selected="true">Summary</button>
+                <button role="tab" type="button" id="tab-terms" data-tab="terms" aria-controls="panel-terms" aria-selected="false" tabindex="-1"><span class="sb-tl-long">Key terms</span><span class="sb-tl-short">Terms</span> <span class="sb-tab-n" id="nTerms"></span></button>
+                <button role="tab" type="button" id="tab-quiz" data-tab="quiz" aria-controls="panel-quiz" aria-selected="false" tabindex="-1">Quiz <span class="sb-tab-n" id="nQuiz"></span></button>
+                <button role="tab" type="button" id="tab-cards" data-tab="cards" aria-controls="panel-cards" aria-selected="false" tabindex="-1"><span class="sb-tl-long">Flashcards</span><span class="sb-tl-short">Cards</span> <span class="sb-tab-n" id="nCards"></span></button>
+              </div>
+              <div class="sb-panel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" tabindex="0"></div>
+              <div class="sb-panel" role="tabpanel" id="panel-terms" aria-labelledby="tab-terms" tabindex="0" hidden></div>
+              <div class="sb-panel" role="tabpanel" id="panel-quiz" aria-labelledby="tab-quiz" tabindex="-1" hidden></div>
+              <div class="sb-panel" role="tabpanel" id="panel-cards" aria-labelledby="tab-cards" tabindex="-1" hidden></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="sb-library" id="library" aria-labelledby="libTitle">
+          <div class="sb-lib-head">
+            <h2 id="libTitle">Library</h2>
+            <span class="sb-muted num" id="libCount"></span>
+          </div>
+          <ul class="sb-lib-grid" id="libList"></ul>
+          <div class="zl-empty" id="libEmpty" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10l2 2h6.5A1.5 1.5 0 0 1 20 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"/></svg>
+            <h3>No saved sets</h3>
+            <p>Every set you generate is saved here, with its quiz score and flashcard progress.</p>
+            <button class="zl-btn zl-btn-secondary" type="button" data-action="example">Add the example set</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="zl-section alt" id="how" data-nav="How it works">
+    <div class="zl-wrap">
+      <div class="zl-section-head zl-reveal"><h2>From notes to revision in three steps.</h2><p>No setup and no account. Your first set takes about twenty seconds.</p></div>
+      <div class="zl-steps zl-reveal">
+        <div class="zl-step"><h3>Add your notes</h3><p>Paste text, or drop in a PDF, .txt or .md file. Up to 30,000 characters per set.</p></div>
+        <div class="zl-step"><h3>Generate a set</h3><p>You get a summary with headings, a searchable list of key terms, a quiz and a deck of flashcards.</p></div>
+        <div class="zl-step"><h3>Review a little each day</h3><p>Rate each card from Again to Easy. Study Buddy brings it back just before you'd forget it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="zl-section" id="features" data-nav="Features">
+    <div class="zl-wrap">
+      <div class="zl-section-head zl-reveal"><h2>Made for the week before the exam.</h2><p>Every part of a set is something you'd otherwise make by hand.</p></div>
+      <div class="zl-bento zl-reveal">
+        <div class="zl-tile wide">
+          <h3>Flashcards that schedule themselves.</h3>
+          <p>Rate a card and it comes back at the right time: later today, tomorrow, in three days, then further apart as it sticks.</p>
+          <div class="zl-tile-visual sb-viz-srs" aria-hidden="true">
+            <svg viewBox="0 0 560 120" preserveAspectRatio="xMidYMid meet">
+              <line class="ax" x1="20" y1="84" x2="540" y2="84"/>
+              <path class="arc" d="M30 84 Q 52 40 74 84"/>
+              <path class="arc" d="M74 84 Q 118 22 162 84"/>
+              <path class="arc" d="M162 84 Q 246 6 330 84"/>
+              <path class="arc strong" d="M330 84 Q 430 -14 530 84"/>
+              <circle class="dot" cx="30" cy="84" r="6"/><circle class="dot" cx="74" cy="84" r="6"/><circle class="dot" cx="162" cy="84" r="6"/><circle class="dot" cx="330" cy="84" r="6"/><circle class="dot end" cx="530" cy="84" r="7"/>
+              <text x="30" y="110" text-anchor="middle">Today</text><text x="74" y="110" text-anchor="middle">1 day</text><text x="162" y="110" text-anchor="middle">3 days</text><text x="330" y="110" text-anchor="middle">8 days</text><text x="530" y="110" text-anchor="middle">3 weeks</text>
+            </svg>
+            <div class="sb-viz-rates"><span>Again</span><span>Hard</span><span class="on">Good</span><span>Easy</span></div>
+          </div>
+        </div>
+        <div class="zl-tile">
+          <h3>Maths that looks like maths.</h3>
+          <p>Equations render properly everywhere: summary, quiz and cards.</p>
+          <div class="zl-tile-visual sb-viz-tex" data-tex="V_{out} = V_s\,\frac{R_2}{R_1 + R_2}" aria-hidden="true">V_out = V_s · R2 / (R1 + R2)</div>
+        </div>
+        <div class="zl-tile">
+          <h3>Reads your PDFs.</h3>
+          <p>Lecture slides and readings are converted to text right in your browser.</p>
+          <div class="zl-tile-visual sb-viz-pdf" aria-hidden="true">
+            <div class="pg"><i></i><i></i><i class="s"></i><i></i><i class="s"></i></div>
+            <span class="zl-badge">12 pages, 18,402 characters</span>
+          </div>
+        </div>
+        <div class="zl-tile wide">
+          <h3>A quiz that explains itself.</h3>
+          <p>Instant feedback on every answer, a score at the end, and one tap to retry only the questions you missed.</p>
+          <div class="zl-tile-visual sb-viz-quiz" aria-hidden="true">
+            <div class="opts">
+              <div class="opt good"><b>B</b><span>3 A</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+              <div class="opt bad"><b>C</b><span>16 A</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+              <div class="opt"><b>D</b><span>48 A</span></div>
+            </div>
+            <svg class="ring" viewBox="0 0 80 80"><circle class="trk" cx="40" cy="40" r="32"/><circle class="val" cx="40" cy="40" r="32" pathLength="100" stroke-dasharray="83 100"/><text x="40" y="46" text-anchor="middle">83%</text></svg>
+          </div>
+        </div>
+        <div class="zl-tile half">
+          <h3>Export to Anki or Markdown.</h3>
+          <p>Take your cards into Anki with maths intact, or keep the whole set as a Markdown file.</p>
+          <div class="zl-tile-visual sb-viz-anki" aria-hidden="true">
+            <code>#deck:Study Buddy::Circuits</code>
+            <code>State Ohm's law.<i>⇥</i>\(V = IR\)</code>
+            <code>Voltage divider<i>⇥</i>\(V_s \frac{R_2}{R_1+R_2}\)</code>
+          </div>
+        </div>
+        <div class="zl-tile half">
+          <h3>Every term, searchable.</h3>
+          <p>Key terms and formulas in one list that filters as you type.</p>
+          <div class="zl-tile-visual sb-viz-search" aria-hidden="true">
+            <div class="fld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>kirch<span class="caret"></span></div>
+            <div class="row"><b>Kirchhoff's current law</b><span>Current in equals current out at a node.</span></div>
+            <div class="row"><b>Kirchhoff's voltage law</b><span>Voltages around a loop sum to zero.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="zl-section alt" id="faq" data-nav="FAQ">
+    <div class="zl-wrap">
+      <div class="zl-section-head center zl-reveal"><h2>Questions</h2></div>
+      <div class="zl-faq zl-reveal">
+        <details><summary>Do I need an API key?</summary><div>No. On lz-study-buddy.pages.dev the AI is hosted for you, with a fair-use limit of 6 sets a minute and 40 a day. If the hosted AI isn't available, you can add your own Anthropic key in Settings. The example set works fully without any AI.</div></details>
+        <details><summary>Where do my notes go?</summary><div>To make a set, your notes are sent to Anthropic's Claude API, either through Study Buddy's server or straight from your browser when you use your own key. Nothing is kept on a server. Your saved sets, scores and flashcard schedules stay in this browser.</div></details>
+        <details><summary>How does the flashcard schedule work?</summary><div>It's a lighter version of SM-2, the algorithm behind Anki. Again shows the card later today. Good brings a new card back tomorrow, then in three days, then at a growing interval. Hard and Easy shorten or stretch the gap, and each card's ease adjusts to how you rate it.</div></details>
+        <details><summary>Can it read scanned PDFs?</summary><div>Only PDFs with selectable text. The text is extracted in your browser with pdf.js, and Study Buddy shows the page and character count so you can check it worked. For a scan, run it through OCR first or paste the text in.</div></details>
+        <details><summary>How do I get my cards into Anki?</summary><div>In the library, choose Export, then Anki deck. In Anki, use File, Import and pick the .txt file. The file tells Anki the separator, the deck name and that fields are HTML, and maths uses Anki's built-in MathJax.</div></details>
+        <details><summary>What happens to my own API key?</summary><div>It's saved only in this browser's local storage and sent only to api.anthropic.com. Press Forget key in Settings to remove it.</div></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-zl="footer"></div>
+
+<!-- Export menu (shared by the set header and library cards) -->
+<div class="sb-menu" id="exportMenu" role="menu" aria-label="Export" hidden>
+  <button role="menuitem" type="button" data-export="anki"><b>Anki deck</b><span>Tab-separated .txt with your flashcards</span></button>
+  <button role="menuitem" type="button" data-export="md"><b>Markdown</b><span>The whole set as a .md file</span></button>
+</div>
+
+<dialog class="zl-dialog" id="settingsDialog" aria-labelledby="settingsH">
+  <form method="dialog" id="settingsForm" novalidate>
+    <div class="zl-dialog-head"><h2 id="settingsH">AI settings</h2>
+      <button class="zl-iconbtn" value="cancel" aria-label="Close settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="zl-dialog-body">
+      <div class="sb-mode-card" id="modeCard" data-mode="checking">
+        <span class="sb-mode-dot" aria-hidden="true"></span>
+        <div><b id="modeCardTitle">Checking</b><p id="modeCardBody"></p></div>
+      </div>
+      <div class="zl-field">
+        <label class="zl-label" for="keyInput">Your Anthropic API key</label>
+        <div class="sb-key-row">
+          <input type="password" id="keyInput" class="zl-input" autocomplete="off" spellcheck="false" placeholder="sk-ant-..." aria-describedby="keyHint keyError">
+          <button type="button" class="zl-btn zl-btn-secondary" id="showKey" aria-pressed="false">Show</button>
+        </div>
+        <span class="zl-hint" id="keyHint">Stored only in this browser and sent only to api.anthropic.com. Get one at console.anthropic.com.</span>
+        <span class="zl-error" id="keyError" hidden></span>
+      </div>
+      <div class="zl-field">
+        <label class="zl-label" for="modelSelect">Model for your key</label>
+        <select class="zl-select" id="modelSelect"></select>
+      </div>
+      <label class="zl-switch" id="preferRow" hidden><input type="checkbox" id="preferKey"> Use my key instead of the hosted AI</label>
+    </div>
+    <div class="zl-dialog-foot sb-dialog-foot">
+      <button type="button" class="zl-btn zl-btn-danger" id="forgetKey">Forget key</button>
+      <span class="sb-grow"></span>
+      <button class="zl-btn zl-btn-secondary" value="cancel">Cancel</button>
+      <button type="button" class="zl-btn zl-btn-primary" id="saveKey">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="zl-dialog" id="renameDialog" aria-labelledby="renameH">
+  <form method="dialog" id="renameForm" novalidate>
+    <div class="zl-dialog-head"><h2 id="renameH">Rename set</h2></div>
+    <div class="zl-dialog-body">
+      <div class="zl-field">
+        <label class="zl-label" for="renameInput">Title</label>
+        <input id="renameInput" class="zl-input" maxlength="80" autocomplete="off" aria-describedby="renameError">
+        <span class="zl-error" id="renameError" hidden></span>
+      </div>
+    </div>
+    <div class="zl-dialog-foot">
+      <button type="button" class="zl-btn zl-btn-secondary" id="renameCancel">Cancel</button>
+      <button type="submit" class="zl-btn zl-btn-primary" id="renameSave">Save</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>
