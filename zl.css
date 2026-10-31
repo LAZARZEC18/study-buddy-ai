@@ -78,7 +78,7 @@ a:hover{text-decoration:underline}
 .zl-icon{width:64px;height:64px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.12))}
 
 /* ---------- Hero ---------- */
-.zl-hero{position:relative;padding:72px 0 40px;text-align:center;overflow:clip}
+.zl-hero{position:relative;padding-top:72px;padding-bottom:40px;text-align:center;overflow:clip}
 .zl-hero::before{content:"";position:absolute;inset:-20% 10% auto;height:520px;background:radial-gradient(closest-side,color-mix(in oklab,var(--accent) 22%,transparent),transparent);filter:blur(30px);z-index:-1;opacity:.9}
 .zl-hero .zl-icon{width:88px;height:88px;margin:0 auto 22px;filter:drop-shadow(0 10px 24px color-mix(in oklab,var(--accent) 45%,transparent))}
 .zl-hero h1{font-size:clamp(48px,8vw,96px);line-height:1;font-weight:700;letter-spacing:-.045em;margin:0}

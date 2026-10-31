@@ -142,7 +142,18 @@
   function tour(steps, opts) {
     tourSteps = steps; opts = opts || {};
     if (opts.autoStart !== false && !store.get("toured", false)) {
-      setTimeout(function () { if (!store.get("toured", false)) startTour(); }, opts.delay || 900);
+      // Start once the visitor reaches the app, so the hero is never skipped on first load.
+      var started = false;
+      var go = function () { if (started) return; started = true; setTimeout(function () { if (!store.get("toured", false) && !card) startTour(); }, opts.delay || 700); };
+      var target = document.getElementById("app");
+      if (!target || !("IntersectionObserver" in window)) { go(); return; }
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          var enough = e.intersectionRect.height >= Math.min(160, innerHeight * 0.2) || e.intersectionRatio >= 0.35;
+          if (e.isIntersecting && enough) { io.disconnect(); go(); }
+        });
+      }, { threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.35, 0.5, 0.75, 1] });
+      io.observe(target);
     }
   }
   function startTour() {
